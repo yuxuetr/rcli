@@ -1,5 +1,7 @@
 use rand::seq::SliceRandom;
 use rand::thread_rng;
+extern crate zxcvbn;
+use zxcvbn::zxcvbn;
 
 const UPPER: &[u8] = b"ABCDEFGHJKLMNPQRSTUVWXYZ";
 const LOWER: &[u8] = b"abcdefghijkmnpqrstuvwxyz";
@@ -39,6 +41,9 @@ pub fn process_genpass(
     password.push(*c);
   }
 
-  println!("password: {}", String::from_utf8(password)?);
+  let password = String::from_utf8(password)?;
+  println!("Password: {:?}", password);
+  let estimate = zxcvbn(&password, &[])?;
+  println!("Password score: {}", estimate.score());
   Ok(())
 }
