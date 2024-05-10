@@ -1,35 +1,22 @@
+use crate::get_reader;
 use anyhow::Result;
 use base64::{engine::general_purpose::URL_SAFE, Engine as _};
-use std::fs::File;
-use std::io::Read;
 
-pub fn process_encode(input: &str) -> Result<()> {
+pub fn process_encode(input: &str) -> Result<String> {
   let mut reader = get_reader(input)?;
   let mut buf = Vec::new();
   reader.read_to_end(&mut buf)?;
   let encoded = URL_SAFE.encode(buf);
-  println!("{}", encoded);
-  Ok(())
+  Ok(encoded)
 }
 
-pub fn process_decode(input: &str) -> Result<()> {
+pub fn process_decode(input: &str) -> Result<Vec<u8>> {
   let mut reader = get_reader(input)?;
   let mut buf = String::new();
   reader.read_to_string(&mut buf)?;
   let buf = buf.trim();
   let decoded = URL_SAFE.decode(buf)?;
-  let decoded = String::from_utf8(decoded)?;
-  println!("{}", decoded);
-  Ok(())
-}
-
-fn get_reader(input: &str) -> Result<Box<dyn Read>> {
-  let reader: Box<dyn Read> = if input == "-" {
-    Box::new(std::io::stdin())
-  } else {
-    Box::new(File::open(input)?)
-  };
-  Ok(reader)
+  Ok(decoded)
 }
 
 #[cfg(test)]

@@ -1,14 +1,16 @@
 mod base64_opts;
 mod csv_opts;
 mod genpass_opts;
+// mod http;
+mod text;
 
 pub use self::base64_opts::Base64SubCommand;
-pub use self::csv_opts::CsvOpts;
+pub use self::csv_opts::{CsvOpts, OutputFormat};
 pub use self::genpass_opts::GenPassOpts;
+// pub use self::http::HttpSubCommand;
+pub use self::text::{TextSignFormat, TextSubCommand};
 use clap::Parser;
-use std::path::Path;
-
-pub use self::csv_opts::OutputFormat;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Parser)]
 #[command(name = "rcli", version, author)]
@@ -27,11 +29,25 @@ pub enum SubCommand {
 
   #[command(subcommand)]
   Base64(Base64SubCommand),
+
+  #[command(subcommand)]
+  Text(TextSubCommand),
+  // #[command(subcommand)]
+  // Http(HttpSubCommand),
 }
 
 pub fn verify_input_file(file_name: &str) -> Result<String, &'static str> {
   if file_name == "-" || Path::new(file_name).exists() {
     Ok(file_name.into())
+  } else {
+    Err("File does not exists")
+  }
+}
+
+pub fn verify_path(path: &str) -> Result<PathBuf, &'static str> {
+  let new_path = Path::new(path);
+  if new_path.exists() && new_path.is_dir() {
+    Ok(path.into())
   } else {
     Err("File does not exists")
   }

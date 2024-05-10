@@ -1,2 +1,2 @@
 ((rust-mode
-  (tab-width . 2)))
+  (tab-width . 2))
