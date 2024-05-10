@@ -2,12 +2,10 @@ use std::fs;
 
 use clap::Parser;
 use rcli::{
-  process_csv, process_decode, process_encode, process_generate, process_genpass, process_sign,
-  process_verify,
+  process_csv, process_decode, process_encode, process_generate, process_genpass,
+  process_http_serve, process_sign, process_verify,
 };
-// process_http_serve,
-// HttpSubCommand,
-use rcli::{Base64SubCommand, Opts, SubCommand, TextSignFormat, TextSubCommand};
+use rcli::{Base64SubCommand, HttpSubCommand, Opts, SubCommand, TextSignFormat, TextSubCommand};
 use zxcvbn::zxcvbn;
 
 #[tokio::main]
@@ -70,11 +68,11 @@ async fn main() -> anyhow::Result<()> {
         }
       }
     },
-    // SubCommand::Http(cmd) => match cmd {
-    //   HttpSubCommand::Serve(opts) => {
-    //     process_http_serve(opts.dir, opts.port).await?;
-    //   }
-    // },
+    SubCommand::Http(cmd) => match cmd {
+      HttpSubCommand::Serve(opts) => {
+        process_http_serve(opts.dir, opts.port).await?;
+      }
+    },
   }
   Ok(())
 }
