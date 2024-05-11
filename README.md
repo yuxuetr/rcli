@@ -173,5 +173,22 @@ tokio = { version = "1.37.0", features = ["rt", "rt-multi-thread", "net", "fs", 
 toml = "0.8.12"
 tower-http = { version = "0.5.2", features = ["compression-full", "cors", "trace", "fs"] }
 tracing = "0.1.40"
-tracing-subscriber = { version = "0.3.18", features = ["env-filter
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+zxcvbn = "2.2.2"
+```
+
+```bash
+# 在$HOME目录下有个`planning.org`文件
+curl http://127.0.0.1:8009/planning.org
+```
+显示内容如下:
+```orgmode
+#+title: Planning
+
++ Rust AIBot
+  - Rust Gemini RESTful API[https://ai.google.dev/tutorials/rest_quickstart]
+  - Rust docx parser[https://docs.rs/docx/latest/docx/]
+
++ Moble LLM Lite
+  - MobileDiffusion[https://blog.research.google/2024/01/mobilediffusion-rapid-text-to-image.html?utm_source=substack&utm_medium=email]
 ```
