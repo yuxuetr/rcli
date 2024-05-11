@@ -1,17 +1,15 @@
-use crate::get_reader;
 use anyhow::Result;
 use base64::{engine::general_purpose::URL_SAFE, Engine as _};
+use std::io::Read;
 
-pub fn process_encode(input: &str) -> Result<String> {
-  let mut reader = get_reader(input)?;
+pub fn process_encode(reader: &mut dyn Read) -> Result<String> {
   let mut buf = Vec::new();
   reader.read_to_end(&mut buf)?;
   let encoded = URL_SAFE.encode(buf);
   Ok(encoded)
 }
 
-pub fn process_decode(input: &str) -> Result<Vec<u8>> {
-  let mut reader = get_reader(input)?;
+pub fn process_decode(reader: &mut dyn Read) -> Result<Vec<u8>> {
   let mut buf = String::new();
   reader.read_to_string(&mut buf)?;
   let buf = buf.trim();
@@ -21,17 +19,22 @@ pub fn process_decode(input: &str) -> Result<Vec<u8>> {
 
 #[cfg(test)]
 mod tests {
-  use crate::{process_decode, process_encode};
+  use super::*;
+  use crate::get_reader;
 
   #[test]
-  fn test_process_encode() {
+  fn test_process_encode() -> Result<()> {
     let input = "Cargo.toml";
-    assert!(process_encode(input).is_ok());
+    let mut reader = get_reader(input)?;
+    assert!(process_encode(&mut reader).is_ok());
+    Ok(())
   }
 
   #[test]
-  fn test_process_denoce() {
+  fn test_process_decode() -> Result<()> {
     let input = "fuxtures/b64.txt";
-    assert!(process_decode(input).is_ok());
+    let mut reader = get_reader(input)?;
+    assert!(process_decode(&mut reader).is_ok());
+    Ok(())
   }
 }

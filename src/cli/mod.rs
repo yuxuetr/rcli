@@ -9,6 +9,7 @@ pub use self::csv_opts::{CsvOpts, OutputFormat};
 pub use self::genpass_opts::GenPassOpts;
 pub use self::http::HttpSubCommand;
 pub use self::text::{TextSignFormat, TextSubCommand};
+use crate::CmdExector;
 use clap::Parser;
 use std::path::{Path, PathBuf};
 
@@ -27,14 +28,26 @@ pub enum SubCommand {
   #[command(name = "genpass", about = "Generate random strength password")]
   GenPass(GenPassOpts),
 
-  #[command(subcommand)]
+  #[command(subcommand, about = "Base64 encode/decode")]
   Base64(Base64SubCommand),
 
-  #[command(subcommand)]
+  #[command(subcommand, about = "Text sign/verify")]
   Text(TextSubCommand),
 
-  #[command(subcommand)]
+  #[command(subcommand, about = "HTTP server")]
   Http(HttpSubCommand),
+}
+
+impl CmdExector for SubCommand {
+  async fn execute(self) -> anyhow::Result<()> {
+    match self {
+      SubCommand::Csv(opts) => opts.execute().await,
+      SubCommand::GenPass(opts) => opts.execute().await,
+      SubCommand::Base64(cmd) => cmd.execute().await,
+      SubCommand::Text(cmd) => cmd.execute().await,
+      SubCommand::Http(cmd) => cmd.execute().await,
+    }
+  }
 }
 
 pub fn verify_input_file(file_name: &str) -> Result<String, &'static str> {

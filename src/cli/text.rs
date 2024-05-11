@@ -1,4 +1,7 @@
 use super::{verify_input_file, verify_path};
+use crate::{get_content, get_reader, process_generate, process_sign, process_verify, CmdExector};
+use base64::engine::general_purpose::URL_SAFE_NO_PAD;
+use base64::Engine;
 use clap::Parser;
 use std::fmt;
 use std::path::PathBuf;
@@ -49,7 +52,53 @@ pub struct TextKeyGenerateOpts {
   pub format: TextSignFormat,
 
   #[arg(short, long, value_parser=verify_path)]
-  pub output: PathBuf,
+  pub output_dir: PathBuf,
+}
+
+impl CmdExector for TextSubCommand {
+  async fn execute(self) -> anyhow::Result<()> {
+    match self {
+      TextSubCommand::Sign(opts) => opts.execute().await,
+      TextSubCommand::Verify(opts) => opts.execute().await,
+      TextSubCommand::Generate(opts) => opts.execute().await,
+    }
+  }
+}
+
+impl CmdExector for TextSignOpts {
+  async fn execute(self) -> anyhow::Result<()> {
+    let mut reader = get_reader(&self.input)?;
+    let key = get_content(&self.key)?;
+    let sig = process_sign(&mut reader, &key, self.format)?;
+    let encoded = URL_SAFE_NO_PAD.encode(sig);
+    print!("{}", encoded);
+    Ok(())
+  }
+}
+
+impl CmdExector for TextVerifyOpts {
+  async fn execute(self) -> anyhow::Result<()> {
+    let mut reader = get_reader(&self.input)?;
+    let key = get_content(&self.key)?;
+    let decoded = URL_SAFE_NO_PAD.decode(&self.sig)?;
+    let verified = process_verify(&mut reader, &key, &decoded, self.format)?;
+    if verified {
+      println!("Signature verified");
+    } else {
+      println!("Signature not verified");
+    }
+    Ok(())
+  }
+}
+
+impl CmdExector for TextKeyGenerateOpts {
+  async fn execute(self) -> anyhow::Result<()> {
+    let key = process_generate(self.format)?;
+    for (k, v) in key {
+      tokio::fs::write(self.output_dir.join(k), v).await?;
+    }
+    Ok(())
+  }
 }
 
 #[derive(Debug, Clone, Copy)]
