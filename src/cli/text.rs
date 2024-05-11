@@ -3,11 +3,13 @@ use crate::{get_content, get_reader, process_generate, process_sign, process_ver
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use base64::Engine;
 use clap::Parser;
+use enum_dispatch::enum_dispatch;
 use std::fmt;
 use std::path::PathBuf;
 use std::str::FromStr;
 
 #[derive(Debug, Parser)]
+#[enum_dispatch(CmdExector)]
 pub enum TextSubCommand {
   #[command(about = "Sign a message with a private/public key")]
   Sign(TextSignOpts),
@@ -55,15 +57,15 @@ pub struct TextKeyGenerateOpts {
   pub output_dir: PathBuf,
 }
 
-impl CmdExector for TextSubCommand {
-  async fn execute(self) -> anyhow::Result<()> {
-    match self {
-      TextSubCommand::Sign(opts) => opts.execute().await,
-      TextSubCommand::Verify(opts) => opts.execute().await,
-      TextSubCommand::Generate(opts) => opts.execute().await,
-    }
-  }
-}
+// impl CmdExector for TextSubCommand {
+//   async fn execute(self) -> anyhow::Result<()> {
+//     match self {
+//       TextSubCommand::Sign(opts) => opts.execute().await,
+//       TextSubCommand::Verify(opts) => opts.execute().await,
+//       TextSubCommand::Generate(opts) => opts.execute().await,
+//     }
+//   }
+// }
 
 impl CmdExector for TextSignOpts {
   async fn execute(self) -> anyhow::Result<()> {

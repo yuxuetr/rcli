@@ -33,7 +33,7 @@ impl CmdExector for GenPassOpts {
     print!("{}", ret);
 
     let estimate = zxcvbn(&ret, &[])?;
-    eprintln!("\n password score: {}", estimate.score());
+    eprintln!("\nPassword score: {}", estimate.score());
     Ok(())
   }
 }
