@@ -1,21 +1,23 @@
 # rcli - Rust Command Line Tools
 
-rcli是一个用Rust编写的命令行工具，提供多种功能，包括:
-1. CSV转换为YAML,JSON,TOML格式
-2. 支持Base64编码/解码
-3. 文本签名验证
-4. HTTP静态服务器
+English | [简体中文](README_cn.md) |
 
-## 安装
+rcli is a command line tool written in Rust that offers various functionalities, including:
+1. Convert CSV to YAML, JSON, TOML formats
+2. Support Base64 encoding/decoding
+3. Text signing verification
+4. HTTP static server
+
+## Installation
 
 ```bash
 git clone https://github.com/yuxuetr/rcli.git
 cd rcli
-# 本地源码安装
+# Local source installation
 cargo install --path .
 ```
 
-## 查看帮助
+## View Help
 
 ```bash
 rcli --help
@@ -34,74 +36,72 @@ Options:
   -V, --version  Print version
 ```
 
-## 功能列表
+## Features List
 
-### CSV转换功能
+### CSV Conversion
 
-1. 将CSV文件转换为YAML格式, 默认在当前目录下生成转换后的文件`output.yaml`
+1. Convert a CSV file to YAML format, default output file `output.yaml` in the current directory
 
 ```bash
 rcli csv -i assets/test.csv --format yaml
 ```
 
-2. 将CSV文件转换为JSON格式，默认在当前目录下生成转换后的文件`output.json`
+2. Convert a CSV file to JSON format, default output file `output.json` in the current directory
 
 ```bash
 rcli csv -i assets/test.csv --format json
 ```
 
-### Base64编解码
+### Base64 Encoding/Decoding
 
-1. Base64编码
-输入`rcli base64 encode`后是等待命令行输入，例如输入`hello`, 然后按两下`Ctrl + D`会生成Base64编码
+1. Base64 Encode
+After entering `rcli base64 encode`, input is expected from the command line. For example, input `hello`, then press `Ctrl + D` twice to generate Base64 encoding
 
 ```bash
 rcli base64 encode
 helloaGVsbG8=%
 ```
 
-2. Base64解码
+2. Base64 Decode
 
-输入`rcli base64 decode`后等待输入，可以将已经编码过的内容输入，例如`aGVsbG8=hello`，然后按两下
-`Ctrl + D`会生成Base64解码的内容
+After entering `rcli base64 decode`, input is expected. You can input the already encoded content, for example `aGVsbG8=hello`, then press `Ctrl + D` twice to generate Base64 decoded content
 
 ```bash
 rcli base64 decode
 aGVsbG8=hello
 ```
 
-### 生成高强度密码
+### Generate Strong Password
 
-生成指定长度的高强度密码，会评估代码的分数，分数是4是强度特别高的密码
+Generate a high-strength password of specified length, evaluating the score of the code. A score of 4 indicates a password with very high strength
 
 ```bash
 rcli genpass -l 32
 ```
 
-### 文本签名生成与验证
+### Text Signing Generation and Verification
 
-1. 生成文本签名所需的key
+1. Generate the key required for text signing
 
-`format`: 表示key的格式, 有两种格式支持: `blake3`和`ed25519`
+`format`: Indicates the format of the key, supporting two formats: `blake3` and `ed25519`
 
-`output-dir`: 表示输出文件的目录，如: fuxtures目录
-- blake3格式会`output-dir`生成`blake3.txt`文件
-- ed25519格式会在`output-dir`生成`ed25519.sk`和`ed25519.pk`
-
-
-```bash
-rcli text generate --format blake3 --output-dir fuxtures
-```
+`output-dir`: Indicates the output directory for files, such as the fuxtures directory
+- The blake3 format will generate the `blake3.txt` file in the `output-dir`
+- The ed25519 format will generate the `ed25519.sk` and `ed25519.pk` files in the `output-dir`
 
 ```bash
 rcli text generate --format blake3 --output-dir fuxtures
 ```
 
-2. 生成文本签名
+```bash
+rcli text generate --format blake3 --output-dir fuxtures
+```
 
-指定上面生成的key后，出现命令等待输入界面，输入内容如`hello`，按两下`Ctrl + D`会输出签名字符串。
+2. Generate Text Signature
 
-如果不指定`format`则，默认`blake3`
+Specify the key generated above, and after entering the command, input content like `hello`. Press `Ctrl + D` twice to output the signature string.
+
+If no `format` is specified, it defaults to `blake3`
 
 ```bash
 rcli text sign -k fuxtures/blake3.txt
@@ -113,10 +113,9 @@ rcli text sign -k fuxtures/ed25519.sk --format ed25519
 hellotOEBY_Hs_E2lQ0zLzcOj41TigJEjZdgtrECfCC_Z9RWX-jnkLbKleVpwsbLjISM_gyUKPFrrF7hqBimvI1shBg
 ```
 
-3. 验证签名
+3. Verify Signature
 
-默认格式是blake3，使用`sig`参数指定经过key签名后的文本，执行后是命令行等待输入窗口，
-输入`hello`会验证sig的签名是否是hello的签名，输出**Signature verified**则表明验证成功
+The default format is blake3, use the `sig` parameter to specify the text signed by the key. After execution, the command line awaits input. Input `hello` to verify if the signature of `sig` is the signature of `hello`. Output **Signature verified** indicates successful verification
 
 ```bash
 rcli text verify -k fuxtures/blake3.txt --sig nhOxI28NvawT1HYkMC4rc9KXzYk2jJFW7PtX_lA4H_8
@@ -128,25 +127,25 @@ rcli text verify -k fuxtures/ed25519.pk --format ed25519 --sig tOEBY_Hs_E2lQ0zLz
 helloSignature verified
 ```
 
-### 本地静态服务器
+### Local Static Server
 
-将指定目录作为静态服务Web服务
-- `dir`: 参数指定目录，默认是当前目录，也就是命令执行所在目录
-- `port`: Web服务端口，默认8009
+Serve a specified directory as a static web service.
+- `dir`: Specifies the directory, default is the current directory where the command is executed.
+- `port`: Web service port, default is 8009.
 
-1. 启动服务
+1. Start the service
 
 ```bash
 rcli http serve
 ```
 
-2. 访问服务
+2. Access the service
 
 ```bash
-# 在rcli项目目录下
+# In the rcli project directory
 curl http://127.0.0.1:8009/Cargo.toml
 ```
-显示内容如下:
+The displayed content is as follows:
 ```toml
 [package]
 name = "rcli"
@@ -174,22 +173,5 @@ tokio = { version = "1.37.0", features = ["rt", "rt-multi-thread", "net", "fs", 
 toml = "0.8.12"
 tower-http = { version = "0.5.2", features = ["compression-full", "cors", "trace", "fs"] }
 tracing = "0.1.40"
-tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
-zxcvbn = "2.2.2"
-```
-
-```bash
-# 在$HOME目录下有个`planning.org`文件
-curl http://127.0.0.1:8009/planning.org
-```
-显示内容如下:
-```orgmode
-#+title: Planning
-
-+ Rust AIBot
-  - Rust Gemini RESTful API[https://ai.google.dev/tutorials/rest_quickstart]
-  - Rust docx parser[https://docs.rs/docx/latest/docx/]
-
-+ Moble LLM Lite
-  - MobileDiffusion[https://blog.research.google/2024/01/mobilediffusion-rapid-text-to-image.html?utm_source=substack&utm_medium=email]
+tracing-subscriber = { version = "0.3.18", features = ["env-filter
 ```
