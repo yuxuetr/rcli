@@ -1,12 +1,18 @@
-use crate::process_genpass;
 use crate::TextSignFormat;
-use anyhow::Result;
+use crate::process_genpass;
+use anyhow::{Result, anyhow};
+use base64::{Engine, engine::general_purpose::STANDARD};
+use chacha20poly1305::{
+  ChaCha20Poly1305, Key, Nonce,
+  aead::{Aead, KeyInit},
+};
 use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use rand::rngs::OsRng;
 use std::collections::HashMap;
 use std::fs;
 use std::io::Read;
 use std::path::Path;
+use std::str;
 
 trait TextSign {
   fn sign(&self, reader: &mut dyn Read) -> Result<Vec<u8>>;
@@ -16,6 +22,7 @@ trait TextVerify {
   fn verify(&self, reader: &mut dyn Read, sig: &[u8]) -> Result<bool>;
 }
 
+#[allow(unused)]
 trait KeyLoader {
   fn load(path: impl AsRef<Path>) -> Result<Self>
   where
@@ -64,6 +71,52 @@ pub fn process_generate(format: TextSignFormat) -> Result<HashMap<&'static str, 
     TextSignFormat::Blake3 => Blake3::generate(),
     TextSignFormat::Ed25519 => Ed25519Signer::generate(),
   }
+}
+
+// rcli text encrypt --key "xxxxxx" => 加密并输出base64
+pub fn encrypt_text(plaintext: &str, key_base64: &str) -> anyhow::Result<String> {
+  let key_bytes = STANDARD.decode(key_base64)?;
+  if key_bytes.len() != 32 {
+    return Err(anyhow!("密钥长度必须为 32 字节"));
+  }
+  let key = Key::from_slice(&key_bytes);
+  let cipher = ChaCha20Poly1305::new(key);
+
+  let mut nonce_bytes = [0u8; 12];
+  getrandom::getrandom(&mut nonce_bytes).map_err(|e| anyhow!("生成随机数失败: {}", e))?;
+  let nonce = Nonce::from_slice(&nonce_bytes);
+
+  let ciphertext = cipher
+    .encrypt(nonce, plaintext.as_bytes())
+    .map_err(|e| anyhow!("加密错误: {}", e))?;
+
+  let mut combined = nonce_bytes.to_vec();
+  combined.extend(ciphertext);
+  Ok(STANDARD.encode(combined))
+}
+
+// rcli text decrypt -key"XXX" >base64 > binary> 解密文本
+pub fn decrypt_text(ciphertext_base64: &str, key_base64: &str) -> anyhow::Result<String> {
+  let key_bytes = STANDARD.decode(key_base64)?;
+  if key_bytes.len() != 32 {
+    return Err(anyhow!("密钥长度必须为 32 字节"));
+  }
+  let key = Key::from_slice(&key_bytes);
+  let cipher = ChaCha20Poly1305::new(key);
+
+  let combined = STANDARD.decode(ciphertext_base64)?;
+  if combined.len() < 12 {
+    return Err(anyhow!("无效的密文格式"));
+  }
+
+  let nonce = Nonce::from_slice(&combined[..12]);
+  let ciphertext = &combined[12..];
+
+  let plaintext_bytes = cipher
+    .decrypt(nonce, ciphertext)
+    .map_err(|e| anyhow!("解密错误: {}", e))?;
+  let plaintext = str::from_utf8(&plaintext_bytes)?;
+  Ok(plaintext.to_string())
 }
 
 impl TextSign for Blake3 {
@@ -184,7 +237,6 @@ impl Ed25519Verifier {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 
   const KEY: &[u8] = include_bytes!("../../fuxtures/blake3.txt");
 
@@ -201,11 +253,11 @@ mod tests {
 
   #[test]
   fn test_blake3_verify() -> Result<()> {
-    let mut reader = "hello".as_bytes();
+    let mut reader_for_sign = "hello".as_bytes();
+    let mut reader_for_verify = "hello".as_bytes();
     let format = TextSignFormat::Blake3;
-    let sig = "m0whwZasZrqEiTEz0-EiS4bAC5voDw-J6wm2jmke-FE";
-    let sig = URL_SAFE_NO_PAD.decode(sig)?;
-    let ret = process_verify(&mut reader, KEY, &sig, format)?;
+    let sig = process_sign(&mut reader_for_sign, KEY, format)?;
+    let ret = process_verify(&mut reader_for_verify, KEY, &sig, format)?;
     assert!(ret);
     Ok(())
   }

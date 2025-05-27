@@ -1,15 +1,16 @@
-mod base64_opts;
-mod csv_opts;
-mod genpass_opts;
+mod b64;
+mod csv;
+mod genpass;
 mod http;
 mod text;
 
-pub use self::base64_opts::{Base64DecodeOpts, Base64EncodeOpts, Base64SubCommand};
-pub use self::csv_opts::{CsvOpts, OutputFormat};
-pub use self::genpass_opts::GenPassOpts;
+pub use self::b64::{Base64DecodeOpts, Base64EncodeOpts, Base64SubCommand};
+pub use self::csv::{CsvOpts, OutputFormat};
+pub use self::genpass::GenPassOpts;
 pub use self::http::{HttpServeOpts, HttpSubCommand};
 pub use self::text::{
-  TextKeyGenerateOpts, TextSignFormat, TextSignOpts, TextSubCommand, TextVerifyOpts,
+  DecryptOpts, EncryptOpts, TextKeyGenerateOpts, TextSignFormat, TextSignOpts, TextSubCommand,
+  TextVerifyOpts,
 };
 use clap::Parser;
 use enum_dispatch::enum_dispatch;
@@ -23,7 +24,7 @@ pub struct Opts {
 }
 
 #[derive(Debug, Parser)]
-#[enum_dispatch(CmdExector)]
+#[enum_dispatch(CmdExecutor)]
 pub enum SubCommand {
   #[command(name = "csv", about = "Show CSV, or convert CSV to others")]
   Csv(CsvOpts),
@@ -41,18 +42,6 @@ pub enum SubCommand {
   Http(HttpSubCommand),
 }
 
-// impl CmdExector for SubCommand {
-//   async fn execute(self) -> anyhow::Result<()> {
-//     match self {
-//       SubCommand::Csv(opts) => opts.execute().await,
-//       SubCommand::GenPass(opts) => opts.execute().await,
-//       SubCommand::Base64(cmd) => cmd.execute().await,
-//       SubCommand::Text(cmd) => cmd.execute().await,
-//       SubCommand::Http(cmd) => cmd.execute().await,
-//     }
-//   }
-// }
-
 pub fn verify_input_file(file_name: &str) -> Result<String, &'static str> {
   if file_name == "-" || Path::new(file_name).exists() {
     Ok(file_name.into())
@@ -68,6 +57,22 @@ pub fn verify_path(path: &str) -> Result<PathBuf, &'static str> {
   } else {
     Err("File does not exists")
   }
+}
+
+/// 验证输出路径：确保父目录存在且可写
+fn verify_output_path(path: &str) -> Result<PathBuf, anyhow::Error> {
+  let path = Path::new(path);
+  if let Some(parent) = path.parent() {
+    if !parent.as_os_str().is_empty() {
+      if !parent.exists() {
+        return Err(anyhow::anyhow!("Parent directory does not exist"));
+      }
+      if !parent.is_dir() {
+        return Err(anyhow::anyhow!("Parent path is not a directory"));
+      }
+    }
+  }
+  Ok(path.to_path_buf())
 }
 
 #[cfg(test)]

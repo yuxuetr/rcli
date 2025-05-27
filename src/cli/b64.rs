@@ -1,10 +1,10 @@
 use super::verify_input_file;
-use crate::CmdExector;
+use crate::CmdExecutor;
 use clap::Parser;
 use enum_dispatch::enum_dispatch;
 
 #[derive(Debug, Parser)]
-#[enum_dispatch(CmdExector)]
+#[enum_dispatch(CmdExecutor)]
 pub enum Base64SubCommand {
   #[command(name = "encode", about = "Encode a base64 string")]
   Encode(Base64EncodeOpts),
@@ -25,7 +25,7 @@ pub struct Base64DecodeOpts {
   pub input: String,
 }
 
-impl CmdExector for Base64EncodeOpts {
+impl CmdExecutor for Base64EncodeOpts {
   async fn execute(self) -> anyhow::Result<()> {
     let mut reader = crate::get_reader(&self.input)?;
     let ret = crate::process_encode(&mut reader)?;
@@ -34,7 +34,7 @@ impl CmdExector for Base64EncodeOpts {
   }
 }
 
-impl CmdExector for Base64DecodeOpts {
+impl CmdExecutor for Base64DecodeOpts {
   async fn execute(self) -> anyhow::Result<()> {
     let mut reader = crate::get_reader(&self.input)?;
     let ret = crate::process_decode(&mut reader)?;
@@ -44,7 +44,7 @@ impl CmdExector for Base64DecodeOpts {
   }
 }
 
-// impl CmdExector for Base64SubCommand {
+// impl CmdExecutor for Base64SubCommand {
 //   async fn execute(self) -> anyhow::Result<()> {
 //     match self {
 //       Base64SubCommand::Encode(opts) => opts.execute().await,

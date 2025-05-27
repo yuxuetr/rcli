@@ -1,15 +1,20 @@
-use super::{verify_input_file, verify_path};
-use crate::{get_content, get_reader, process_generate, process_sign, process_verify, CmdExector};
-use base64::engine::general_purpose::URL_SAFE_NO_PAD;
+use super::{verify_input_file, verify_output_path, verify_path};
+use crate::{
+  CmdExecutor, decrypt_text, encrypt_text, get_content, get_reader, process_generate, process_sign,
+  process_verify,
+};
 use base64::Engine;
+use base64::engine::general_purpose::STANDARD;
+use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use clap::Parser;
 use enum_dispatch::enum_dispatch;
 use std::fmt;
+use std::io::Read;
 use std::path::PathBuf;
 use std::str::FromStr;
 
 #[derive(Debug, Parser)]
-#[enum_dispatch(CmdExector)]
+#[enum_dispatch(CmdExecutor)]
 pub enum TextSubCommand {
   #[command(about = "Sign a message with a private/public key")]
   Sign(TextSignOpts),
@@ -19,6 +24,12 @@ pub enum TextSubCommand {
 
   #[command(about = "Generate a new key")]
   Generate(TextKeyGenerateOpts),
+
+  #[command(about = "Encrypt text")]
+  Encrypt(EncryptOpts),
+
+  #[command(about = "Decrypt text")]
+  Decrypt(DecryptOpts),
 }
 
 #[derive(Debug, Parser)]
@@ -57,17 +68,32 @@ pub struct TextKeyGenerateOpts {
   pub output_dir: PathBuf,
 }
 
-// impl CmdExector for TextSubCommand {
-//   async fn execute(self) -> anyhow::Result<()> {
-//     match self {
-//       TextSubCommand::Sign(opts) => opts.execute().await,
-//       TextSubCommand::Verify(opts) => opts.execute().await,
-//       TextSubCommand::Generate(opts) => opts.execute().await,
-//     }
-//   }
-// }
+#[derive(Debug, Parser)]
+pub struct EncryptOpts {
+  #[arg(short, long)]
+  key: String,
 
-impl CmdExector for TextSignOpts {
+  #[arg(short, long, value_parser = verify_input_file, default_value="-")]
+  input: String,
+
+  #[arg(short, long, value_parser = verify_output_path)]
+  output: Option<PathBuf>,
+}
+
+#[derive(Debug, Parser)]
+pub struct DecryptOpts {
+  #[arg(short, long)]
+  key: String,
+
+  #[arg(short, long, value_parser = verify_input_file, default_value="-")]
+  input: String,
+
+  #[arg(short, long, value_parser = verify_output_path)]
+  output: Option<PathBuf>,
+}
+
+// text sign
+impl CmdExecutor for TextSignOpts {
   async fn execute(self) -> anyhow::Result<()> {
     let mut reader = get_reader(&self.input)?;
     let key = get_content(&self.key)?;
@@ -78,7 +104,8 @@ impl CmdExector for TextSignOpts {
   }
 }
 
-impl CmdExector for TextVerifyOpts {
+// text verify
+impl CmdExecutor for TextVerifyOpts {
   async fn execute(self) -> anyhow::Result<()> {
     let mut reader = get_reader(&self.input)?;
     let key = get_content(&self.key)?;
@@ -93,11 +120,55 @@ impl CmdExector for TextVerifyOpts {
   }
 }
 
-impl CmdExector for TextKeyGenerateOpts {
+// text key generate
+impl CmdExecutor for TextKeyGenerateOpts {
   async fn execute(self) -> anyhow::Result<()> {
     let key = process_generate(self.format)?;
     for (k, v) in key {
       tokio::fs::write(self.output_dir.join(k), v).await?;
+    }
+    Ok(())
+  }
+}
+
+// text encrypt
+// rcli text encrypt --key <key>
+impl CmdExecutor for EncryptOpts {
+  async fn execute(self) -> anyhow::Result<()> {
+    let mut reader = get_reader(&self.input)?;
+    let mut input = Vec::new();
+    reader.read_to_end(&mut input)?;
+    let input = String::from_utf8(input)?;
+    let key_base64 = STANDARD.encode(self.key.as_bytes());
+    let encrypted = encrypt_text(&input, &key_base64)?;
+    let encoded = URL_SAFE_NO_PAD.encode(encrypted.as_bytes());
+
+    if let Some(output_path) = self.output {
+      tokio::fs::write(output_path, encoded).await?;
+    } else {
+      println!("{}", encoded);
+    }
+    Ok(())
+  }
+}
+
+// text decrypt
+// rcli text decrypt --key <key>
+impl CmdExecutor for DecryptOpts {
+  async fn execute(self) -> anyhow::Result<()> {
+    let mut reader = get_reader(&self.input)?;
+    let mut input = Vec::new();
+    reader.read_to_end(&mut input)?;
+    let input = String::from_utf8(input)?;
+    let key_base64 = STANDARD.encode(self.key.as_bytes());
+    let decoded_input = URL_SAFE_NO_PAD.decode(input.trim())?;
+    let decoded_input = String::from_utf8(decoded_input)?;
+    let decrypted = decrypt_text(&decoded_input, &key_base64)?;
+
+    if let Some(output_path) = self.output {
+      tokio::fs::write(output_path, decrypted).await?;
+    } else {
+      println!("{}", decrypted);
     }
     Ok(())
   }

@@ -1,5 +1,5 @@
 use super::verify_input_file;
-use crate::CmdExector;
+use crate::CmdExecutor;
 use clap::Parser;
 use std::fmt;
 use std::str::FromStr;
@@ -29,7 +29,7 @@ pub struct CsvOpts {
   pub header: bool,
 }
 
-impl CmdExector for CsvOpts {
+impl CmdExecutor for CsvOpts {
   async fn execute(self) -> anyhow::Result<()> {
     let output = if let Some(output) = self.output {
       output
