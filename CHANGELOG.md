@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file. See [conven
 - remove pre-commit-config.yaml black repo - ([ec47e26](https://github.com/yuxuetr/rcli/commit/ec47e26bfda01b1476d36d7ccf91188d95ec77af)) - yuxuetr
 - replace println with eprintln - ([35a68b4](https://github.com/yuxuetr/rcli/commit/35a68b4773109dab8f7b336a239037ab84d6fc2d)) - yuxuetr
 - fix README.md content - ([8775688](https://github.com/yuxuetr/rcli/commit/8775688a531640f284c9d34fd28a8e0bbd8790a0)) - yuxuetr
+- Github Action branch name: from master to main - ([04aa166](https://github.com/yuxuetr/rcli/commit/04aa1663511e2478fdaab9c41b833261149be3c2)) - yuxuetr
 
 ### Features
 
@@ -28,6 +29,8 @@ All notable changes to this project will be documented in this file. See [conven
 - readme for rcli - ([538a1e6](https://github.com/yuxuetr/rcli/commit/538a1e6a79f8b1a6ae5c4d060bb0fa70d24f1d64)) - yuxuetr
 - add English README.md and link Chinese README_cn.md - ([d2c3fcf](https://github.com/yuxuetr/rcli/commit/d2c3fcfc30908e2f194b5f5569908bb94361e4b1)) - yuxuetr
 - add tags - ([313db39](https://github.com/yuxuetr/rcli/commit/313db395236e747fe7b61c3534468f660f2b48fe)) - yuxuetr
+- generate CHANGELOG.md content - ([73ea42d](https://github.com/yuxuetr/rcli/commit/73ea42d14fd007dbe0d2321ac9c3f43e76ecb5ed)) - yuxuetr
+- support encrypt and decrypt - ([b639126](https://github.com/yuxuetr/rcli/commit/b6391262a376b9ed75df800c578dc11d521f4903)) - yuxuetr
 
 ### Other
 
