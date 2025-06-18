@@ -1,6 +1,6 @@
 [package]
 edition = "2024"
-name = "rcli"
+name = "intj"
 version = "0.2.0"
 # author = ["xueTr54<jinpeng.ti@gmail.com>"]
 license = "MIT"
