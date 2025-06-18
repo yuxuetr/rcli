@@ -1,9 +1,11 @@
+mod ai;
 mod b64;
 mod csv;
 mod genpass;
 mod http;
 mod text;
 
+pub use ai::process_ai_chat;
 pub use b64::process_decode;
 pub use b64::process_encode;
 pub use csv::process_csv;

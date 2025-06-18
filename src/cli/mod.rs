@@ -1,9 +1,11 @@
+mod ai;
 mod b64;
 mod csv;
 mod genpass;
 mod http;
 mod text;
 
+pub use self::ai::{AiChatOpts, AiOutputFormat, AiSubCommand};
 pub use self::b64::{Base64DecodeOpts, Base64EncodeOpts, Base64SubCommand};
 pub use self::csv::{CsvOpts, OutputFormat};
 pub use self::genpass::GenPassOpts;
@@ -40,6 +42,9 @@ pub enum SubCommand {
 
   #[command(subcommand, about = "HTTP server")]
   Http(HttpSubCommand),
+
+  #[command(subcommand, about = "AI chat with Google Gemini")]
+  Ai(AiSubCommand),
 }
 
 pub fn verify_input_file(file_name: &str) -> Result<String, &'static str> {

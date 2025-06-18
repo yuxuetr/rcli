@@ -3,13 +3,14 @@ mod process;
 mod utils;
 
 pub use cli::{
-  Base64DecodeOpts, Base64EncodeOpts, CsvOpts, DecryptOpts, EncryptOpts, GenPassOpts,
-  HttpServeOpts, Opts, TextKeyGenerateOpts, TextSignOpts, TextVerifyOpts,
+  AiChatOpts, AiSubCommand, Base64DecodeOpts, Base64EncodeOpts, CsvOpts, DecryptOpts, EncryptOpts,
+  GenPassOpts, HttpServeOpts, Opts, TextKeyGenerateOpts, TextSignOpts, TextVerifyOpts,
 };
 pub use cli::{
   Base64SubCommand, HttpSubCommand, OutputFormat, SubCommand, TextSignFormat, TextSubCommand,
 };
 use enum_dispatch::enum_dispatch;
+pub use process::process_ai_chat;
 pub use process::process_csv;
 pub use process::process_genpass;
 pub use process::process_http_serve;
